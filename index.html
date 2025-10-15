@@ -3,8 +3,9 @@
   <meta charset="UTF-8">
   <title>Dynamic Web Component</title>
 </head>
-<body>
-  <my-select>Element contents</my-select>
+<body>     
+   <div id="app"></div>
+   
    <script>
     const onLoad = (evt) => {};
     const onError = (err) => {};
@@ -15,11 +16,15 @@
       const script = document.createElement('script');
       script.src = `${component}.js`;
       script.dataset.name = component;
-      script.addEventListener('load', onLoad);
-      document.body.append(script);
-    });
 
-    
+      script.onload = () => {
+        const element = document.createElement(components);
+        document.getElementById('app').appendChild(element);
+      };
+      script.addEventListener('load', onLoad);
+
+      document.body.append(script);
+    });    
    </script>
 </body>
 </html>
