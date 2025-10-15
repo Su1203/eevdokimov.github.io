@@ -1,0 +1,25 @@
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <title>Dynamic Web Component</title>
+</head>
+<body>
+  <my-select>Element contents</my-select>
+   <script>
+    const onLoad = (evt) => {};
+    const onError = (err) => {};
+
+    const components = ['my-select'];
+
+    components.forEach((component) => {
+      const script = document.createElement('script');
+      script.src = `${component}.js`;
+      script.dataset.name = component;
+      script.addEventListener('load', onLoad);
+      document.body.append(script);
+    });
+
+    
+   </script>
+</body>
+</html>
