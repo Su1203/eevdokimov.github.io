@@ -8,10 +8,23 @@ class MySelect extends HTMLElement {
   #selectPopupSearch;
   #optionsBox;
   #shadow;
+  #filterInput;
+  #slotOptions;
+
+  get value() {
+    return this.getAttribute('value') || '';
+  }
+
+  set value(val) {
+    this.setAttribute('value', val);
+  }
 
   connectedCallback() {
+    this._options = [];
+    this._selected = new Set();
     const options = Array.from(this.querySelectorAll('option'));
     this.#shadow = this.attachShadow({ mode: 'open' });
+
     const optionsObject = {};
     options.forEach((opt) => {
       optionsObject[opt.value] = opt.textContent;
@@ -21,12 +34,69 @@ class MySelect extends HTMLElement {
     options.forEach((opt) => opt.remove());
     this.#shadow.innerHTML = `
       <div class="select-popup">
-        <input placeholder="Search..." />
+        <slot name="search">
+          <input placeholder="Search..." />
+        </slot>
         <button class="select-button">&#9660</button>              
       </div>      
     `;
     this.#shadow.append(optionsContainer);
     this.#shadow.append(this.#createTemplate());
+    this._initOptions();
+    this.#attachEvents();
+  }
+
+  _initOptions() {
+    this._options = Array.from(this.#slotOptions).map((opt) => {
+      const value = opt.value || opt.textContent.trim();
+      opt.addEventListener('click', (e) => {
+        e.stopPropagation();
+
+        if (this._selected.has(value)) {
+          this._selected.delete(value);
+        } else {
+          this._selected.add(value);
+        }
+        this._updateValue();
+      });
+
+      return {
+        label: opt.textContent.trim(),
+        value: value,
+      };
+    });
+  }
+
+  #attachEvents() {
+    // Фильтрация
+    this.#filterInput.addEventListener('input', (e) => {
+      const term = e.target.value.toLowerCase();
+      this.#slotOptions.forEach((label) => {
+        const text = label.textContent.toLowerCase();
+        label.style.display = text.includes(term) ? '' : 'none';
+      });
+
+      this.#renderOptions;
+    });
+
+    // Клик вне селекта — закрыть
+    document.addEventListener('click', (e) => {
+      if (!this.contains(e.target)) {
+        this.closeOptionsBox();
+      }
+    });
+  }
+
+  closeOptionsBox() {
+    this.#optionsBox.classList.remove('open');
+  }
+
+  _updateValue() {
+    const values = Array.from(this._selected);
+    this.value = values.join(',');
+    const labelText = values.length > 0 ? values.join(', ') : '';
+    this.#selectPopupSearch.value = labelText;
+    this.dispatchEvent(new Event('change'));
   }
 
   #renderOptions(optionsObj) {
@@ -43,7 +113,10 @@ class MySelect extends HTMLElement {
       .join('');
 
     template.innerHTML = `      
-      <div class="select-popup-options">
+      <div class="select-popup-options">       
+        <div class = "filter">
+          <input type="text" placeholder="Фильтр...">
+        </div>
         ${optionsHTML}
       </div>
     `;
@@ -63,10 +136,7 @@ class MySelect extends HTMLElement {
           .select-popup-options{
             display: none;            
           } 
-          .select-popup{            
-            //position: absolute;
-            //top: 100%;
-            //left: 0;
+          .select-popup{      
             background: var(--select-popup-background, white);
             display: flex;
             border: 1px solid #aaa;            
@@ -79,7 +149,17 @@ class MySelect extends HTMLElement {
          :host{
            position: relative;
            display: inline-block;
-         }                
+         }             
+         .filter {
+          border-bottom: 1px solid #eee;
+          padding: 0.5rem;
+         }
+         .filter input {
+            width: 100%;
+            padding: 0.4rem;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+         }     
       </style>      
     `;
 
@@ -87,6 +167,8 @@ class MySelect extends HTMLElement {
     this.#selectPopupSearch = this.#shadow.querySelector('.select-popup input');
     this.#optionsBox = this.#shadow.querySelector('.select-popup-options');
     this.#selectButton = this.#shadow.querySelector('.select-button');
+    this.#filterInput = this.#shadow.querySelector('.filter');
+    this.#slotOptions = this.#shadow.querySelectorAll('.option');
 
     this.#selectButton.addEventListener('click', this.#openPopup.bind(this));
     return template.content.cloneNode(true);
