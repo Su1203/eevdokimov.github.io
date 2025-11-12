@@ -8,16 +8,18 @@
   const bc = new BroadcastChannel("test_channel");
   let thread = null; 
 
-  bc.onmessage = (evt) => {          
-    document.getElementById("result").innerHTML = evt.data;        
-  };  
-
   document.getElementById('start').addEventListener('click', () => {
     if (window.Worker) {
       if (!thread) {
           thread = new Worker("./thread.js");
       }    
-      bc.postMessage("start");
+
+      thread.addEventListener('message', evt => {
+        document.getElementById('result').innerHTML = evt.data;
+      });
+
+      
+      thread.postMessage({ timeout: 5000 });
     }
 });
 </script>

@@ -1,18 +1,14 @@
-const bc = new BroadcastChannel('test_channel');
-slowFunction = (timeout = 3000) => {
-  let start = performance.now();
-  let x = 0;
-  let i = 0;
-  do {
-    i += 1;
-    x += (Math.random() - 0.5) * i;
-  } while (performance.now() - start < timeout);
-  console.log('end', x);
+let subworker = null;
 
-  return `Результат: ${x}`;
-};
+self.addEventListener('message', (evt) => {
+  if (!subworker) {
+    subworker = new Worker('./thread2.js');
+    console.log('thread2.js создали');
 
-bc.onmessage = () => {
-  const result = slowFunction(3000);
-  bc.postMessage(result);
-};
+    // Получаем результат от thread2.js
+    subworker.addEventListener('message', (e) => {
+      self.postMessage(e.data);
+    });
+  }
+  subworker.postMessage(5000);
+});
