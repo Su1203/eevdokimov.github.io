@@ -1,25 +1,14 @@
-<button id="start">Start!</button>
-<div>
-    <svg class="spinner">...</svg>
-</div>
-<div id="result"></div>
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+</head>
+<body>
+  <h1>Пример </h1>
+  <p id="result"></p>
+  <button id="start">Start</button>
+  <button id="unregister">Unregister</button>
 
-<script>
-  const bc = new BroadcastChannel("test_channel");
-  let thread = null; 
-
-  document.getElementById('start').addEventListener('click', () => {
-    if (window.Worker) {
-      if (!thread) {
-          thread = new Worker("./thread.js");
-      }    
-
-      thread.addEventListener('message', evt => {
-        document.getElementById('result').innerHTML = evt.data;
-      });
-
-      
-      thread.postMessage({ timeout: 5000 });
-    }
-});
-</script>
+  <script src="script.js"></script>
+</body>
+</html>
