@@ -9,8 +9,10 @@ slowFunction = (timeout = 3000) => {
   } while (performance.now() - start < timeout);
   console.log('end', x);
 
-  return `Результат: ${timeout}`;
+  return `Результат: ${x}`;
 };
 
-const result = slowFunction(3000);
-bc.postMessage(result);
+bc.onmessage = () => {
+  const result = slowFunction(3000);
+  bc.postMessage(result);
+};
