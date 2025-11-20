@@ -4,17 +4,22 @@
   <title>Dynamic Web Component</title>
 </head>
 <body>     
-   <my-select>
-    <option value="opt1">Option 1</option>
-    <option value="opt2">Option 2</option>
-    <option value="opt3">Option 3</option>
-   </my-select>
-
+  <my-panel header="Заголовок панели">
+    <p class="m-0">
+        Выпадающий список
+    </p>
+    <my-select>
+      <option value="opt1">Option 1</option>
+      <option value="opt2">Option 2</option>
+      <option value="opt3">Option 3</option>
+    </my-select>
+  </my-panel>
+  
    <script>
     const onLoad = (evt) => {};
     const onError = (err) => {};
 
-    const components = ['my-select'];
+    const components = ['my-select', 'my-panel'];
 
     components.forEach((component) => {
       const script = document.createElement('script');
@@ -23,6 +28,6 @@
       document.body.append(script);
     });    
         
-   </script>
+   </script> 
 </body>
 </html>
