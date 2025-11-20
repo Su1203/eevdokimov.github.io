@@ -1,12 +1,16 @@
 class MyPanel extends HTMLElement {
   constructor() {
     super();
+    this.#shadow = this.attachShadow({ mode: 'open' });
+    this.#panel();
   }
 
   #shadow;
+  #headerPanel;
+  #subHeaderPanel;
+  static observedAttributes = ['header', 'sub-header'];
 
-  connectedCallback() {
-    this.#shadow = this.attachShadow({ mode: 'open' });
+  #panel() {
     const style = document.createElement('style');
     style.textContent = `
       :host {
@@ -27,9 +31,16 @@ class MyPanel extends HTMLElement {
         user-select: none;
       }
       .header h3 {
+        padding: 0;
         margin: 0;
         font-size: 1rem;
       }
+      .sub-header {       
+        margin: 0;
+        font-size: 0.8rem;
+        font-style: italic;
+        text-align:left;
+      }        
       .content {
         padding: 1rem;
         display: block;
@@ -44,6 +55,7 @@ class MyPanel extends HTMLElement {
 
     this.#header(style);
   }
+  connectedCallback() {}
 
   #header(style) {
     const container = document.createElement('div');
@@ -51,9 +63,15 @@ class MyPanel extends HTMLElement {
     const header = document.createElement('div');
     header.classList.add('header');
     header.innerHTML = `
-      <h3>${this.getAttribute('header') || 'Panel'}</h3>
+      <div>
+        <h3 class = "header"></h3>
+        <h5 class = "sub-header"></h5>
+      </div>
       <span class="toggle-icon">&#9660</span>
     `;
+
+    this.#headerPanel = header.querySelector('.header');
+    this.#subHeaderPanel = header.querySelector('.sub-header');
 
     const content = document.createElement('div');
     content.classList.add('content');
@@ -69,8 +87,16 @@ class MyPanel extends HTMLElement {
 
     container.appendChild(header);
     container.appendChild(content);
-
     this.#shadow.append(style, container);
+  }
+
+  attributeChangedCallback(name, oldValue, newValue) {
+    if (name == 'header' && this.#headerPanel) {
+      this.#headerPanel.textContent = newValue;
+    }
+    if (name == 'sub-header' && this.#subHeaderPanel) {
+      this.#subHeaderPanel.textContent = newValue;
+    }
   }
 }
 
