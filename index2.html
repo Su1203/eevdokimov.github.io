@@ -1,0 +1,23 @@
+<button id="start">Start!</button>
+<div>
+    <svg class="spinner">...</svg>
+</div>
+<div id="result"></div>
+
+<script>
+    const bc = new BroadcastChannel("test_channel");
+
+   document.getElementById('start').addEventListener('click', () => {
+    if (window.Worker) {
+      const thread = new Worker("./thread.js");   
+      
+      bc.onmessage = (evt) => {
+        document.getElementById("result").innerHTML = evt.data;
+        thread.terminate();
+        console.log('Воркер завершён');
+      };   
+
+      
+    }
+});
+</script>
