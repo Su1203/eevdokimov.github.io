@@ -10,6 +10,7 @@ class MySelect extends HTMLElement {
   #shadow;
   #filterInput;
   #slotOptions;
+  #listOptions;
 
   get value() {
     return this.getAttribute('value') || '';
@@ -25,12 +26,14 @@ class MySelect extends HTMLElement {
     const options = Array.from(this.querySelectorAll('option'));
     this.#shadow = this.attachShadow({ mode: 'open' });
 
-    const optionsObject = {};
+    const template = document.createElement('template');
+
+    this.optionsAllObject = {};
     options.forEach((opt) => {
-      optionsObject[opt.value] = opt.textContent;
+      this.optionsAllObject[opt.value] = opt.textContent;
     });
 
-    const optionsContainer = this.#renderOptions(optionsObject);
+    //const optionsContainer =
     options.forEach((opt) => opt.remove());
     this.#shadow.innerHTML = `
       <div class="select-popup">
@@ -40,7 +43,19 @@ class MySelect extends HTMLElement {
         <button class="select-button">&#9660</button>              
       </div>      
     `;
-    this.#shadow.append(optionsContainer);
+    const optionsHTML = this.#renderOptions(this.optionsAllObject);
+
+    template.innerHTML = `      
+      <div class="select-popup-options">       
+        <div class = "filter">
+          <input type="text" placeholder="Фильтр...">
+        </div>
+        <div class="list-options">
+          ${optionsHTML}
+        </div>
+      </div>
+    `;
+    this.#shadow.append(template.content.cloneNode(true));
     this.#shadow.append(this.#createTemplate());
     this._initOptions();
     this.#attachEvents();
@@ -71,12 +86,12 @@ class MySelect extends HTMLElement {
     // Фильтрация
     this.#filterInput.addEventListener('input', (e) => {
       const term = e.target.value.toLowerCase();
-      this.#slotOptions.forEach((label) => {
-        const text = label.textContent.toLowerCase();
-        label.style.display = text.includes(term) ? '' : 'none';
-      });
+      const filtered = Object.fromEntries(
+        Object.entries(this.optionsAllObject).filter(([key, value]) => value.toLowerCase().includes(term))
+      );
 
-      this.#renderOptions;
+      this.#listOptions.innerHTML = '';
+      this.#listOptions.innerHTML = this.#renderOptions(filtered);
     });
 
     // Клик вне селекта — закрыть
@@ -100,8 +115,8 @@ class MySelect extends HTMLElement {
   }
 
   #renderOptions(optionsObj) {
-    const template = document.createElement('template');
-    const optionsHTML = Object.entries(optionsObj)
+    //optionsHTML =
+    return Object.entries(optionsObj)
       .map(
         ([value, text]) => `
       <label class="option" data-value="${value}">
@@ -111,16 +126,6 @@ class MySelect extends HTMLElement {
     `
       )
       .join('');
-
-    template.innerHTML = `      
-      <div class="select-popup-options">       
-        <div class = "filter">
-          <input type="text" placeholder="Фильтр...">
-        </div>
-        ${optionsHTML}
-      </div>
-    `;
-    return template.content.cloneNode(true);
   }
 
   #createTemplate() {
@@ -169,6 +174,7 @@ class MySelect extends HTMLElement {
     this.#selectButton = this.#shadow.querySelector('.select-button');
     this.#filterInput = this.#shadow.querySelector('.filter');
     this.#slotOptions = this.#shadow.querySelectorAll('.option');
+    this.#listOptions = this.#optionsBox.querySelector('.list-options');
 
     this.#selectButton.addEventListener('click', this.#openPopup.bind(this));
     return template.content.cloneNode(true);
